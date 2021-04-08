@@ -1,5 +1,8 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+  CACHE STRING "Vcpkg toolchain file")
+
 project ("GolfGL")
 
 
@@ -9,48 +12,29 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 
+cmake_policy(SET CMP0072 NEW)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_PROJECT_NAME})
 
-if(UNIX)  
-  cmake_policy(SET CMP0072 NEW)
-  find_package(Freetype REQUIRED)
-  message(STATUS "Found Freetype in ${FREETYPE_INCLUDE_DIR_ft2build}")
-  
-  set(GLAD_LIBRARY "${CMAKE_SOURCE_DIR}/External/GLAD/lib/unix/libglad.a")
-  set(IMGUI_LIBRARY "${CMAKE_SOURCE_DIR}/External/imgui/lib/unix/libimgui.a")      
-
-else() # WIN32
-  link_directories(${CMAKE_SOURCE_DIR}/External/freetype2/win64 
-                  ${CMAKE_SOURCE_DIR}/External/GLFW/lib 
-                  ${CMAKE_SOURCE_DIR}/External/assimp/lib
-                  ${CMAKE_SOURCE_DIR}/External/GLAD/lib/win64
-                  ${CMAKE_SOURCE_DIR}/External/imgui/lib/win64
-                  )
-
-  set(FREETYPE_INCLUDE_DIR_ft2build "${CMAKE_SOURCE_DIR}/External/freetype2/include")    
-endif(UNIX)
 
 # Include paths for External libs
-set(GLAD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/External/GLAD")
-set(IMGUI_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/External/imgui")
 set(STB_IMAGE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/External/stb_image")
 
 # find the required packages
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
-find_package(GLM REQUIRED)
-message(STATUS "GLM included at ${GLM_INCLUDE_DIR}")
-find_package(GLFW3 REQUIRED)
-message(STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
-find_package(ASSIMP REQUIRED)
-message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
+find_package(glm CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+find_package(freetype CONFIG REQUIRED)
 
 
 
 # Grouping libs
 if(WIN32)
-  set(LIBS glad glfw3 opengl32 assimp freetype imgui)
+  set(LIBS glad::glad glfw opengl32 assimp::assimp freetype glm::glm imgui::imgui spdlog::spdlog spdlog::spdlog_header_only)
 
 else() # UNIX
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
@@ -58,8 +42,8 @@ else() # UNIX
   add_definitions(${OPENGL_DEFINITIONS})
   find_package(X11 REQUIRED)  
   
-  set(LIBS ${GLAD_LIBRARY} ${GLFW3_LIBRARY} X11 Xrandr Xinerama Xi Xxf86vm Xcursor GL dl 
-      pthread freetype ${ASSIMP_LIBRARY} ${IMGUI_LIBRARY})
+  set(LIBS glad::glad glfw X11 Xrandr Xinerama Xi Xxf86vm Xcursor GL dl assimp::assimp pthread
+				freetype glm::glm imgui::imgui spdlog::spdlog spdlog::spdlog_header_only)  
   set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -ldl")
 endif(WIN32)
 
@@ -130,19 +114,12 @@ else()
 endif(MSVC)
 
 
-if(WIN32)									
-  add_custom_command(TARGET ${NAME} PRE_LINK COMMAND 
-              ${CMAKE_COMMAND} -E copy
-              "${CMAKE_SOURCE_DIR}/External/assimp/lib/assimp-vc140-mt.dll" $<TARGET_FILE_DIR:${NAME}>)
-
-
-# Making symbolic link on unix for Resources
-else()
+if(UNIX)									
   add_custom_command(TARGET ${NAME} PRE_BUILD COMMAND 
         ${CMAKE_COMMAND} -E create_symlink "${Source_Root}/Resources" 
         $<TARGET_FILE_DIR:${NAME}>/Resources)        
 
-endif(WIN32)
+endif()
 
 
 # Suppressing warnings from external libs
@@ -152,14 +129,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     "-Wno-shift-negative-value -Wno-implicit-fallthrough -Wno-unused-but-set-variable -Wno-sign-compare")        
 endif()
 
-include_directories(${ASSIMP_INCLUDE_DIR}
-                    ${FREETYPE_INCLUDE_DIR_ft2build}
-                    ${GLAD_INCLUDE_DIR}
-                    ${GLFW3_INCLUDE_DIR}
-                    ${IMGUI_INCLUDE_DIR}
-                    ${IMGUI_INCLUDE_DIR}/backends
-					${STB_IMAGE_INCLUDE_DIR}
-                    ${CMAKE_SOURCE_DIR}/External                    
+include_directories(					                                  
                     ${CMAKE_SOURCE_DIR}/Game/Source
 		            ${CMAKE_SOURCE_DIR}/Game/Source/Render
                    )

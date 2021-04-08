@@ -19,6 +19,6 @@ namespace Window
         void DrawGFXSettings();
 
         bool m_DebugMenuActive = true;
-        bool m_ViewportsEnable = false;
+        // bool m_ViewportsEnable = false;
     };
 } // namespace Window

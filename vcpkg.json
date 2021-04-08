@@ -1,0 +1,19 @@
+{
+    "name": "golfgl", 
+    "version-string": "0.1.0-dev",
+    "dependencies": [
+        "glad",
+        "glfw3",
+        "assimp",
+        "freetype",
+        "glm",
+        "egl-registry",
+        "glbinding",
+        "imgui",
+        {
+            "name" : "imgui",
+            "features" : ["glfw-binding", "opengl3-glbinding-binding"]
+        },              
+        "spdlog"        
+    ]
+}

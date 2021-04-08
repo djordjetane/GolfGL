@@ -1,5 +1,0 @@
-# CMake generation dependency list for this directory.
-C:/Program Files/CMake/share/cmake-3.19/Modules/FindPackageHandleStandardArgs.cmake
-C:/Program Files/CMake/share/cmake-3.19/Modules/FindPackageMessage.cmake
-C:/Users/djordje/Desktop/assimp-4.1.0/cmake-modules/FindRT.cmake
-C:/Users/djordje/Desktop/assimp-4.1.0/code/CMakeLists.txt

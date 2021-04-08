@@ -1,7 +1,7 @@
 #include <precomp.h>
 #include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 
 #include "DebugWindow.h"
 
@@ -12,7 +12,7 @@ bool Window::DebugWindow::Init()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    // ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -44,7 +44,6 @@ bool Window::DebugWindow::Update()
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    /*
     m_ViewportsEnable = (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0;
 
     if (m_ViewportsEnable)
@@ -54,7 +53,7 @@ bool Window::DebugWindow::Update()
         ImGui::RenderPlatformWindowsDefault();
         glfwMakeContextCurrent(backupCurrentContext);
     }
-    */
+
     return true;
 }
 

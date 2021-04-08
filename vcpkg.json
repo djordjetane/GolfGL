@@ -8,12 +8,7 @@
         "freetype",
         "glm",
         "egl-registry",
-        "glbinding",
-        "imgui",
-        {
-            "name" : "imgui",
-            "features" : ["glfw-binding", "opengl3-glbinding-binding"]
-        },              
+        "glbinding",                     
         "spdlog"        
     ]
 }

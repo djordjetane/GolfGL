@@ -1,5 +1,6 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 
+cmake_policy(SET CMP0072 NEW)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
   CACHE STRING "Vcpkg toolchain file")
 
@@ -12,7 +13,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 
-cmake_policy(SET CMP0072 NEW)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_PROJECT_NAME})
@@ -27,14 +27,17 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
-find_package(imgui CONFIG REQUIRED)
 find_package(freetype CONFIG REQUIRED)
 
-
+file(GLOB IMGUI_SRC "imgui/*.h" "imgui/*.cpp")
+file(GLOB IMGUI_BACK "imgui/backends/imgui_impl_glfw.*" "imgui/backends/imgui_impl_opengl3.*")
+add_library(imgui ${IMGUI_SRC} ${IMGUI_BACK})
+target_link_libraries(imgui glad::glad)
+target_compile_definitions(imgui PUBLIC -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # Grouping libs
 if(WIN32)
-  set(LIBS glad::glad glfw opengl32 assimp::assimp freetype glm::glm imgui::imgui spdlog::spdlog spdlog::spdlog_header_only)
+  set(LIBS glad::glad glfw opengl32 assimp::assimp freetype glm::glm imgui spdlog::spdlog spdlog::spdlog_header_only)
 
 else() # UNIX
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
@@ -43,7 +46,7 @@ else() # UNIX
   find_package(X11 REQUIRED)  
   
   set(LIBS glad::glad glfw X11 Xrandr Xinerama Xi Xxf86vm Xcursor GL dl assimp::assimp pthread
-				freetype glm::glm imgui::imgui spdlog::spdlog spdlog::spdlog_header_only)  
+				freetype glm::glm imgui spdlog::spdlog spdlog::spdlog_header_only)  
   set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -ldl")
 endif(WIN32)
 
@@ -124,12 +127,13 @@ endif()
 
 # Suppressing warnings from external libs
 if(CMAKE_COMPILER_IS_GNUCXX)  
-    file(GLOB_RECURSE externHeaders "${CMAKE_SOURCE_DIR}/External/*.h" "${Source_Root}/Source/precomp.cpp")
+    file(GLOB_RECURSE externHeaders "${Source_Root}/Source/precomp.cpp")
     set_source_files_properties(${externHeaders} PROPERTIES COMPILE_FLAGS 
     "-Wno-shift-negative-value -Wno-implicit-fallthrough -Wno-unused-but-set-variable -Wno-sign-compare")        
 endif()
 
-include_directories(					                                  
+include_directories(
+                    ${CMAKE_SOURCE_DIR}/imgui
                     ${CMAKE_SOURCE_DIR}/Game/Source
 		            ${CMAKE_SOURCE_DIR}/Game/Source/Render
                    )
